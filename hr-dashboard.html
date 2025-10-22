@@ -1,0 +1,455 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HR Dashboard — HRMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#0f172a; --muted:#64748b; --accent:#08d7e6;
+    --card:#ffffff; --glass:rgba(255,255,255,0.92);
+    --success:#10b981; --danger:#ef4444;
+    --radius:12px; --shadow:0 10px 30px rgba(15,23,42,0.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 60%);
+    color:#0f172a;min-height:100vh;padding:28px;
+  }
+
+  .wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;box-shadow:0 8px 24px rgba(99,102,241,0.12)}
+  h1{margin:0;font-size:20px}
+  .user{display:flex;gap:12px;align-items:center}
+  .avatar{width:40px;height:40px;border-radius:10px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+  .btn{padding:8px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer}
+  .btn-ghost{background:transparent;color:var(--accent);border:1px solid rgba(99,102,241,0.08)}
+  .btn-primary{background:linear-gradient(90deg,var(--accent),#9333ea);color:#fff;box-shadow:0 8px 28px rgba(124,58,237,0.12)}
+
+  /* Layout */
+  .main-grid{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:18px}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:1fr;gap:12px}
+  .stat-item{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #f1f5f9}
+  .stat-info{font-size:13px;color:var(--muted)}
+  .stat-num{font-size:20px;font-weight:800;color:var(--accent)}
+
+  /* Job posting form */
+  form .row{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  input[type="text"], textarea, select, input[type="date"], input[type="time"]{
+    padding:10px;border-radius:8px;border:1px solid #eef2ff;background:#fff;font-size:14px
+  }
+  textarea{min-height:80px;resize:vertical}
+
+  /* Candidate list */
+  .list-filters{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+  .chips{display:flex;gap:8px}
+  .chip{padding:8px 10px;border-radius:999px;background:#f8fafc;border:1px solid #eef2ff;font-weight:700;color:#334155;cursor:pointer}
+  .chip.active{background:linear-gradient(90deg,var(--accent),#6366f1);color:#fff;border:none}
+
+  .candidate-list{max-height:320px;overflow:auto;border-radius:8px;border:1px solid #eef2ff}
+  .cand{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #f1f5f9}
+  .cand:last-child{border-bottom:0}
+  .cand .meta{display:flex;gap:12px;align-items:center}
+  .cand .name{font-weight:700}
+  .status{padding:6px 8px;border-radius:999px;font-weight:700;font-size:12px}
+  .status.applied{background:#eef2ff;color:#2563eb}
+  .status.shortlisted{background:#ecfdf5;color:#059669}
+  .status.rejected{background:#fff1f2;color:#dc2626}
+
+  /* Scheduler */
+  .scheduler{display:grid;grid-template-columns:1fr;gap:8px}
+  .notify-list{max-height:160px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #eef2ff;background:#fbfdff}
+  .notify{padding:8px;border-bottom:1px solid #f1f5f9;font-size:13px}
+  .notify:last-child{border-bottom:0}
+
+  /* Messages */
+  .messages{display:flex;flex-direction:column;gap:8px}
+  .message{padding:10px;border-radius:8px;border:1px solid #eef2ff;background:#fff}
+
+  /* Responsive */
+  @media (max-width:980px){
+    .main-grid{grid-template-columns:1fr}
+    header{flex-direction:column;align-items:flex-start;gap:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">HR</div>
+        <div>
+          <h1>HR Management Dashboard</h1>
+          <div style="font-size:13px;color:var(--muted)">Manage people • jobs • interviews</div>
+        </div>
+      </div>
+
+      <div class="user">
+        <div id="greeting" style="text-align:right">
+          <div style="font-size:13px;color:var(--muted)">Signed in as</div>
+          <div style="font-weight:800" id="userName">—</div>
+        </div>
+        <div class="avatar" id="userInitial">HR</div>
+        <button class="btn btn-ghost" onclick="openIndex()">Home</button>
+        <button class="btn btn-primary" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Left column: Stats + Job Posting + Scheduler -->
+      <div class="col">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Stats</div>
+            <div style="font-size:13px;color:var(--muted)">Overview</div>
+          </div>
+          <div class="stats">
+            <div class="stat-item">
+              <div>
+                <div style="font-weight:800">Total Jobs</div>
+                <div class="stat-info">Active & closed job postings</div>
+              </div>
+              <div class="stat-num" id="totalJobs">0</div>
+            </div>
+
+            <div class="stat-item">
+              <div>
+                <div style="font-weight:800">Applications</div>
+                <div class="stat-info">Total received</div>
+              </div>
+              <div class="stat-num" id="totalApps">0</div>
+            </div>
+
+            <div class="stat-item">
+              <div>
+                <div style="font-weight:800">Interviews</div>
+                <div class="stat-info">Scheduled upcoming</div>
+              </div>
+              <div class="stat-num" id="totalInterviews">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800;margin-bottom:8px">Job Posting</div>
+          <form id="jobForm" onsubmit="return addJob(event)">
+            <div class="row">
+              <label style="font-size:13px;color:var(--muted)">Job Title</label>
+              <input id="jobTitle" type="text" placeholder="e.g. Senior Software Engineer" required />
+            </div>
+            <div class="row">
+              <label style="font-size:13px;color:var(--muted)">Description</label>
+              <textarea id="jobDesc" placeholder="Short description"></textarea>
+            </div>
+            <div class="row">
+              <label style="font-size:13px;color:var(--muted)">Type</label>
+              <select id="jobType">
+                <option value="External">External</option>
+                <option value="Internal">Internal</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+              <button type="button" class="btn btn-ghost" onclick="resetJobForm()">Reset</button>
+              <button type="submit" class="btn btn-primary">Publish Job</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Interview Scheduler</div>
+            <div style="font-size:13px;color:var(--muted)">Calendar & notifications</div>
+          </div>
+
+          <div class="scheduler">
+            <div style="display:flex;gap:8px">
+              <input id="interviewDate" type="date" />
+              <input id="interviewTime" type="time" />
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="interviewTitle" type="text" placeholder="Interview with candidate" style="flex:1" />
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn btn-ghost" onclick="clearSchedule()">Clear</button>
+              <button class="btn btn-primary" onclick="scheduleInterview()">Schedule</button>
+            </div>
+
+            <div style="margin-top:12px;font-weight:700">Notifications</div>
+            <div class="notify-list" id="notifyList" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Candidates, Employees, Messages -->
+      <div class="col">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <div style="font-weight:800">Candidate Management</div>
+              <div style="font-size:13px;color:var(--muted)">Applications & statuses</div>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="candSearch" placeholder="Search candidate" style="padding:8px;border-radius:8px;border:1px solid #eef2ff" />
+            </div>
+          </div>
+
+          <div class="list-filters">
+            <div class="chips">
+              <div class="chip active" data-filter="All" onclick="setCandFilter(event)">All</div>
+              <div class="chip" data-filter="Applied" onclick="setCandFilter(event)">Applied</div>
+              <div class="chip" data-filter="Shortlisted" onclick="setCandFilter(event)">Shortlisted</div>
+              <div class="chip" data-filter="Rejected" onclick="setCandFilter(event)">Rejected</div>
+            </div>
+            <div style="margin-left:auto;font-size:13px;color:var(--muted)">Total: <span id="candCount">0</span></div>
+          </div>
+
+          <div class="candidate-list" id="candidateList"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Employees</div>
+            <div style="font-size:13px;color:var(--muted)">Active accounts</div>
+          </div>
+          <div id="employeePanel" style="display:grid;gap:8px"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Messages & Notifications</div>
+            <div style="font-size:13px;color:var(--muted)">Inbox</div>
+          </div>
+          <div class="messages" id="messages">
+            <!-- messages injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- Basic data helpers (local-only demo) ---
+  function getLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null') }catch(e){return null} }
+  function setLS(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
+
+  function seedDemo(){
+    if(!getLS('jobs')){
+      setLS('jobs', [
+        {id:1,title:'Frontend Engineer',type:'External',desc:'React developer'},
+        {id:2,title:'HR Coordinator',type:'Internal',desc:'Manage onboarding'}
+      ]);
+    }
+    if(!getLS('applications')){
+      setLS('applications', [
+        {id:1,name:'kritesh',email:'kritesh@example.com',jobId:1,status:'Applied'},
+        {id:2,name:'ram',email:'ram@example.com',jobId:1,status:'Shortlisted'},
+        {id:3,name:'shyam',email:'shyam@example.com',jobId:2,status:'Rejected'}
+      ]);
+    }
+    if(!getLS('interviews')) setLS('interviews', []);
+    if(!getLS('messages')){
+      setLS('messages', [
+        {id:1,from:'system',text:'Welcome to HR dashboard',time:Date.now()}
+      ]);
+    }
+    if(!getLS('users')){
+      setLS('users', [
+        {name:'kritesh',email:'alice@example.com',role:'employee'},
+        {name:'ram',email:'ram@example.com',role:'manager'},
+        {name:'shyam',email:'shyam@example.com',role:'hr'}
+      ]);
+    }
+  }
+
+  // --- Renderers ---
+  function updateStats(){
+    const jobs = getLS('jobs')||[];
+    const apps = getLS('applications')||[];
+    const interviews = (getLS('interviews')||[]).filter(i => new Date(i.date+'T'+i.time) >= new Date());
+    document.getElementById('totalJobs').textContent = jobs.length;
+    document.getElementById('totalApps').textContent = apps.length;
+    document.getElementById('totalInterviews').textContent = interviews.length;
+  }
+
+  function renderJobsList(){
+    // not a full list UI, but updates stats; could be expanded
+    updateStats();
+  }
+
+  function renderCandidates(){
+    const apps = getLS('applications')||[];
+    const q = (document.getElementById('candSearch').value||'').toLowerCase();
+    const active = document.querySelector('.chip.active').dataset.filter || 'All';
+    const list = document.getElementById('candidateList');
+    list.innerHTML = '';
+    const filtered = apps.filter(a=>{
+      if(active !== 'All' && a.status !== active) return false;
+      if(!q) return true;
+      return (a.name||'').toLowerCase().includes(q) || (a.email||'').toLowerCase().includes(q);
+    });
+    document.getElementById('candCount').textContent = filtered.length;
+    filtered.forEach(a=>{
+      const job = (getLS('jobs')||[]).find(j=>j.id===a.jobId) || {title:'—'};
+      const div = document.createElement('div');
+      div.className = 'cand';
+      div.innerHTML = `
+        <div class="meta">
+          <div style="width:44px;height:44px;border-radius:8px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)">${(a.name||'?').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</div>
+          <div>
+            <div class="name">${escapeHtml(a.name)}</div>
+            <div style="font-size:13px;color:var(--muted)">${escapeHtml(a.email)} • ${escapeHtml(job.title)}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="status ${a.status.toLowerCase()}">${a.status}</div>
+          <div style="display:flex;gap:6px">
+            <button class="chip" onclick="updateCandStatus(${a.id},'Shortlisted')">Shortlist</button>
+            <button class="chip" onclick="updateCandStatus(${a.id},'Rejected')">Reject</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function renderEmployees(){
+    const users = getLS('users')||[];
+    const panel = document.getElementById('employeePanel');
+    panel.innerHTML = '';
+    users.forEach(u=>{
+      const d = document.createElement('div');
+      d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center'; d.style.padding='8px'; d.style.borderRadius='8px'; d.style.border='1px solid #f1f5f9';
+      d.innerHTML = `<div>
+        <div style="font-weight:700">${escapeHtml(u.name)}</div>
+        <div style="font-size:13px;color:var(--muted)">${escapeHtml(u.email)}</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">${escapeHtml(u.role)}</div>`;
+      panel.appendChild(d);
+    });
+  }
+
+  function renderMessages(){
+    const msgs = getLS('messages')||[];
+    const box = document.getElementById('messages');
+    box.innerHTML = '';
+    msgs.slice().reverse().forEach(m=>{
+      const div = document.createElement('div');
+      div.className='message';
+      div.innerHTML = `<div style="font-weight:700">${escapeHtml(m.from||'System')}</div><div style="font-size:13px;color:var(--muted)">${escapeHtml(m.text)}</div>`;
+      box.appendChild(div);
+    });
+  }
+
+  // --- Actions ---
+  function addJob(e){
+    e.preventDefault();
+    const title = document.getElementById('jobTitle').value.trim();
+    const desc = document.getElementById('jobDesc').value.trim();
+    const type = document.getElementById('jobType').value;
+    if(!title) return alert('Title required');
+    const jobs = getLS('jobs')||[];
+    const id = (jobs.reduce((s,j)=>Math.max(s,j.id||0),0) || 0) + 1;
+    jobs.push({id,title,desc,type});
+    setLS('jobs', jobs);
+    document.getElementById('jobForm').reset();
+    renderJobsList();
+    pushMessage('system', `Job published: ${title}`);
+    showNotify(`Job published: ${title}`);
+    return false;
+  }
+  function resetJobForm(){ document.getElementById('jobForm').reset() }
+
+  function updateCandStatus(id, status){
+    const apps = getLS('applications')||[];
+    const idx = apps.findIndex(a=>a.id===id);
+    if(idx===-1) return;
+    apps[idx].status = status;
+    setLS('applications', apps);
+    renderCandidates();
+    pushMessage('system', `${apps[idx].name} marked as ${status}`);
+    showNotify(`${apps[idx].name} — ${status}`);
+  }
+
+  function scheduleInterview(){
+    const date = document.getElementById('interviewDate').value;
+    const time = document.getElementById('interviewTime').value;
+    const title = document.getElementById('interviewTitle').value.trim() || 'Interview';
+    if(!date || !time) return alert('Pick a date and time');
+    const interviews = getLS('interviews')||[];
+    interviews.push({id:Date.now(), date, time, title});
+    setLS('interviews', interviews);
+    updateStats();
+    pushMessage('system', `Interview scheduled: ${title} ${date} ${time}`);
+    showNotify(`Interview scheduled: ${title} on ${date} ${time}`);
+  }
+  function clearSchedule(){ document.getElementById('interviewDate').value=''; document.getElementById('interviewTime').value=''; document.getElementById('interviewTitle').value='' }
+
+  function pushMessage(from,text){
+    const msgs = getLS('messages')||[];
+    msgs.push({id:Date.now(), from, text, time:Date.now()});
+    setLS('messages', msgs);
+    renderMessages();
+  }
+
+  function showNotify(text){
+    const list = document.getElementById('notifyList');
+    const div = document.createElement('div');
+    div.className='notify';
+    div.textContent = (new Date()).toLocaleTimeString() + ' — ' + text;
+    list.prepend(div);
+    // keep latest 6
+    while(list.children.length > 6) list.removeChild(list.lastChild);
+  }
+
+  // --- Utilities ---
+  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+  function setCandFilter(e){
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    const chip = e.currentTarget || e.target;
+    chip.classList.add('active');
+    renderCandidates();
+  }
+
+  // small helpers from original
+  function loadCurrent(){
+    const cur = JSON.parse(localStorage.getItem('currentUser')||'null');
+    if(cur){
+      document.getElementById('userName').textContent = cur.name || cur.email || '—';
+      document.getElementById('userInitial').textContent = (cur.name||'HR').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    } else {
+      document.getElementById('userName').textContent = 'HR Admin';
+      document.getElementById('userInitial').textContent = 'HR';
+    }
+  }
+  function logout(){ localStorage.removeItem('currentUser'); window.location.href='index.html' }
+  function openIndex(){ window.location.href='index.html' }
+
+  // wire events
+  document.getElementById('candSearch').addEventListener('input', renderCandidates);
+  document.getElementById('jobForm').addEventListener('submit', addJob);
+
+  // init
+  (function init(){
+    seedDemo();
+    loadCurrent();
+    renderJobsList();
+    renderCandidates();
+    renderEmployees();
+    renderMessages();
+    // fill initial notifications from past messages
+    (getLS('messages')||[]).slice(-3).forEach(m=> showNotify(m.text));
+  })();
+</script>
+</body>
+</html>
